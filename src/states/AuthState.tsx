@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
+import { toast } from 'react-toastify'
 import { auth } from '../connection/firebase'
 
 export interface IAuthState {
@@ -27,14 +28,19 @@ const AuthState = ({ children }: { children: ReactNode }) => {
 
   const signUp = (email: string, password: string) => {
     auth.createUserWithEmailAndPassword(email, password)
-      .then(userCredential => { console.log(userCredential.user) })
-      .catch(e => console.log(e.message))
+      .then(() => {
+        toast.success('Usuário criado com sucesso')
+        history.push('')
+      })
+      .catch(e => toast.error(e.message))
   }
 
   const signIn = (email: string, password: string) => {
     auth.signInWithEmailAndPassword(email, password)
-      .then(() => history.push('/core'))
-      .catch(e => console.log(e.message))
+      .then(() => {
+        history.push('/update-password')
+      })
+      .catch(() => toast.error('Verifique as credenciais fornecidas'))
   }
 
   useEffect(() => {
@@ -43,17 +49,18 @@ const AuthState = ({ children }: { children: ReactNode }) => {
 
   const updatePassword = (newPassword: string) => {
     auth.currentUser?.updatePassword(newPassword).then(() => {
-      console.log('dasdhssoiuahdiuhsi')
-    }).catch((e: any) => console.log(e))
+      history.push('/core')
+      toast.success('Senha alterada com sucesso')
+    }).catch(() => toast.error('Ocorreu um erro para alterar sua senha'))
   }
 
   const sendMail = (email: string) => {
     auth.languageCode = 'pt-BR'
     auth.sendPasswordResetEmail(email).then(() => {
-      console.log('email')
-    }).catch(e => {
-      console.log(e)
-    })
+      history.push('/')
+      toast.success('Verifique a caixa de entrada do seu email')
+    }
+    ).catch(() => toast.error('Este email não existe em nosso sistema'))
   }
 
   const contextValue = {
