@@ -2,6 +2,8 @@ import firebase from 'firebase/app'
 import 'firebase/firebase-firestore'
 import 'firebase/firebase-auth'
 
+// TO-DO REMOVING CREDENTIALS
+
 const firebaseConfig = {
   apiKey: 'AIzaSyAwWVyOx2MuCtQ56frsm0jXd7cpf6DPg7g',
   authDomain: 'serveless-crud.firebaseapp.com',

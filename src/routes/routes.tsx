@@ -9,7 +9,7 @@ import PrivateRoute from './PrivateRoute'
 const Router = () => (
     <Switch>
       <Route path="/create-user" component={CreateUser} />
-      <Route path="/sign-in" component={SignIn} />
+      <Route path="/" component={SignIn} exact/>
       <Route path="/send-mail" component={SendMail} />
       <PrivateRoute path="/core" component={Core} />
       <PrivateRoute path="/update-password" component={UpdatePassword} />
