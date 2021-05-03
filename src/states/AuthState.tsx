@@ -38,7 +38,7 @@ const AuthState = ({ children }: { children: ReactNode }) => {
   const signIn = (email: string, password: string) => {
     auth.signInWithEmailAndPassword(email, password)
       .then(() => {
-        history.push('/update-password')
+        history.push('/core')
       })
       .catch(() => toast.error('Verifique as credenciais fornecidas'))
   }
