@@ -7,18 +7,37 @@ import { IPerson } from '../types'
 import { lowerCaseStringAndRemoveAccent } from '../utils/strings'
 import { FiTrash, FiEdit } from 'react-icons/fi'
 import swal from 'sweetalert2'
+import axios from 'axios'
 
 interface Props {
   className?: string
+}
+
+interface IState {
+  id: number
+  nome: string
+  regiao: any
+  sigla: string
 }
 
 const Core = ({ className }: Props) => {
   const { addNewPerson, people, deleteData } = useContext(CoreContext)
   const [data, setData] = useState<IPerson[]>(people)
   const [search, setSearch] = useState<string>('')
+  const [states, setStates] = useState<IState[]>([])
 
   useEffect(() => {
     addNewPerson('jpoo', 12, 'teste', '32131223', 'bh', 'mg')
+  }, [])
+
+  const fetchStates = () => {
+    axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome').then(response => {
+      setStates(response.data)
+    })
+  }
+
+  useEffect(() => {
+    fetchStates()
   }, [])
 
   const filterPeople = () => {
@@ -119,11 +138,9 @@ const Core = ({ className }: Props) => {
           <Form.Group className="col-3">
             <Form.Label>Estado</Form.Label>
             <Form.Control as="select">
-              <option>Solteiro(a)</option>
-              <option>Casado(a)</option>
-              <option>Divorciado(a)</option>
-              <option>Viuvo(a)</option>
-              <option>Separado(a)</option>
+              {states.map(state => (
+                <option key={state.id}>{state.sigla}</option>
+              ))}
             </Form.Control>
           </Form.Group>
           <Form.Group className="col-9">
