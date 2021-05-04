@@ -18,5 +18,17 @@ export interface IPerson {
     state: string
   }
   uuid: string
+}
 
+export interface IState {
+  id: number
+  nome: string
+  regiao: any
+  sigla: string
+}
+
+export interface ICity {
+  id: number
+  nome: string
+  municipio: any
 }
