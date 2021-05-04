@@ -1,23 +1,17 @@
-import { Form, Table } from 'react-bootstrap'
+import { Button, Form, Table } from 'react-bootstrap'
 import Header from '../components/Header'
 import styled from 'styled-components'
 import { useContext, useEffect, useState } from 'react'
 import { CoreContext } from '../states/CoreState'
-import { IPerson } from '../types'
+import { IPerson, IState, ICity } from '../types'
 import { lowerCaseStringAndRemoveAccent } from '../utils/strings'
 import { FiTrash, FiEdit } from 'react-icons/fi'
 import swal from 'sweetalert2'
 import axios from 'axios'
+import Space from '../components/Space'
 
 interface Props {
   className?: string
-}
-
-interface IState {
-  id: number
-  nome: string
-  regiao: any
-  sigla: string
 }
 
 const Core = ({ className }: Props) => {
@@ -25,10 +19,36 @@ const Core = ({ className }: Props) => {
   const [data, setData] = useState<IPerson[]>(people)
   const [search, setSearch] = useState<string>('')
   const [states, setStates] = useState<IState[]>([])
+  const [cities, setCities] = useState<ICity[]>([])
+
+  const [inputName, setInputName] = useState<string>('')
+  const [inputAge, setInputAge] = useState<number>()
+  const [inputMaritalStatus, setInputMaritalStatus] = useState<string>('')
+  const [inputIdentification, setInputIdentification] = useState<string>('')
+  const [inputState, setInputState] = useState<string>('')
+  const [inputCity, setInputCity] = useState<string>('')
+  const [action, setAction] = useState<'UPDATE' | 'CREATE'>('CREATE')
 
   useEffect(() => {
     addNewPerson('jpoo', 12, 'teste', '32131223', 'bh', 'mg')
   }, [])
+
+  const setInputFields = (
+    name: string,
+    age: number,
+    maritalStatus: string,
+    identification: string,
+    city: string,
+    state: string
+  ) => {
+    setInputName(name)
+    setInputAge(age)
+    setInputMaritalStatus(maritalStatus)
+    setInputIdentification(identification)
+    setInputState(state)
+    setInputCity(city)
+    setAction('UPDATE')
+  }
 
   const fetchStates = () => {
     axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome').then(response => {
@@ -36,8 +56,15 @@ const Core = ({ className }: Props) => {
     })
   }
 
+  const loadCities = (state: string) => {
+    axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/distritos?orderBy=nome`).then(response => {
+      setCities(response.data)
+    })
+  }
+
   useEffect(() => {
     fetchStates()
+    loadCities('AC')
   }, [])
 
   const filterPeople = () => {
@@ -95,7 +122,16 @@ const Core = ({ className }: Props) => {
                   <td>{person.data.city}</td>
                   <td>{person.data.state}</td>
                   <td className="actions">
-                    <FiEdit />
+                    <FiEdit onClick={() => {
+                      setInputFields(
+                        person.data.name,
+                        person.data.age,
+                        person.data.maritalStatus,
+                        person.data.identification,
+                        person.data.city,
+                        person.data.state
+                      )
+                    }}/>
                     <FiTrash onClick={() => handleDelete(person.uuid)}/>
                   </td>
                 </tr>
@@ -107,6 +143,7 @@ const Core = ({ className }: Props) => {
         <Form.Group className="col-12">
           <Form.Label>Nome</Form.Label>
           <Form.Control
+            value={inputName}
             type="text"
           />
         </Form.Group>
@@ -114,12 +151,16 @@ const Core = ({ className }: Props) => {
           <Form.Group className="col-3">
             <Form.Label>Idade</Form.Label>
             <Form.Control
+              value={inputAge}
               type="number"
             />
           </Form.Group>
           <Form.Group className="col-9">
             <Form.Label>Estado Civil</Form.Label>
-            <Form.Control as="select">
+            <Form.Control
+              as="select"
+              value={inputMaritalStatus}
+            >
               <option>Solteiro(a)</option>
               <option>Casado(a)</option>
               <option>Divorciado(a)</option>
@@ -131,13 +172,18 @@ const Core = ({ className }: Props) => {
         <Form.Group className="col-12">
           <Form.Label>CPF</Form.Label>
           <Form.Control
+            value={inputIdentification}
             type="email"
           />
         </Form.Group>
         <Form.Row className="col-12">
           <Form.Group className="col-3">
             <Form.Label>Estado</Form.Label>
-            <Form.Control as="select">
+            <Form.Control
+              as="select"
+              onChange={e => loadCities(e.target.value)}
+              value={inputState}
+            >
               {states.map(state => (
                 <option key={state.id}>{state.sigla}</option>
               ))}
@@ -146,9 +192,22 @@ const Core = ({ className }: Props) => {
           <Form.Group className="col-9">
             <Form.Label>Cidade</Form.Label>
             <Form.Control
-              type="email"
-            />
+              as="select"
+              value={inputCity}
+            >
+              {cities && cities.map(city => (
+                <option key={city.id}>{city.nome}</option>
+              ))}
+            </Form.Control>
           </Form.Group>
+          <Space height="100px"/>
+          {action === 'CREATE'
+            ? (
+            <Button type="submit" className="btn-block">Adicionar</Button>
+              )
+            : (
+            <Button type="submit" className="btn-block btn-success">Editar</Button>
+              )}
         </Form.Row>
         </div>
       </div>
@@ -166,13 +225,7 @@ export default styled(Core)`
   @media(max-width: 1000px) {
     grid-template-columns: 1fr;
     grid-template-rows: 3fr 2fr;
-
-    .right-side {
-      background: yellow;
-      padding: 0;
-    }
   }
-
 
   .left-side {
     margin-top: 90px;
@@ -181,7 +234,7 @@ export default styled(Core)`
     align-items: center;
 
     .input__group {
-      margin-top: 40px;
+      margin: 40px 0;
     }
   }
 
@@ -190,13 +243,21 @@ export default styled(Core)`
     height: 100%;
     width: 100%;
     box-shadow: -1px 0px 10px 1px #00000040;
-    padding-top: 100px;
+    padding-top: 120px;
+
+    @media(max-width: 1000px) {
+      padding: 30px 0;
+    }
   }
 
   .table {
     color: ${props => props.theme.fontColor};
-    max-width: 900px;
+    max-width: 100%;
     box-shadow: 4px 4px 20px 2px #00000040;
+
+    @media(max-width: 1000px) {
+      background: yellow;
+    }
 
     thead {
       background: ${props => props.theme.primaryColor};
