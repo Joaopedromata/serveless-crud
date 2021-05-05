@@ -1,9 +1,10 @@
-import { createContext, ReactNode, useEffect, useState } from 'react'
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { db } from '../connection/firebase'
+import { AuthContext } from './AuthState'
 
 export interface ICoreState {
-  addNewPerson: (
+  addOrSetNewPerson: (
     name: string,
     age: number | string,
     maritalStatus: string,
@@ -16,7 +17,7 @@ export interface ICoreState {
 }
 
 const initialState: ICoreState = {
-  addNewPerson: () => undefined,
+  addOrSetNewPerson: () => undefined,
   people: [],
   deleteData: () => undefined
 }
@@ -25,17 +26,20 @@ export const CoreContext = createContext(initialState)
 
 const CoreState = ({ children }: { children: ReactNode }) => {
   const [people, setPeople] = useState<any[]>()
+  const { user } = useContext(AuthContext)
 
-  const getData = async () => {
-    const snapshot = await db.collection('people').get()
-    return setPeople(snapshot.docs.map(doc => { return { data: doc.data(), uuid: doc.id } }))
+  const getData = async (user: string) => {
+    if (user) {
+      const snapshot = await db.collection(user).get()
+      return setPeople(snapshot.docs.map(doc => { return { data: doc.data(), uuid: doc.id } }))
+    }
   }
 
   useEffect(() => {
-    getData()
-  }, [])
+    getData(user)
+  }, [user])
 
-  const addNewPerson = (
+  const addOrSetNewPerson = (
     name: string,
     age: number | string,
     maritalStatus: string,
@@ -43,24 +47,28 @@ const CoreState = ({ children }: { children: ReactNode }) => {
     city: string,
     state: string
   ) => {
-    db.collection('people').doc(identification).set({
-      name,
-      age,
-      maritalStatus,
-      identification,
-      city,
-      state
-    })
+    if (user) {
+      db.collection(user).doc(identification).set({
+        name,
+        age,
+        maritalStatus,
+        identification,
+        city,
+        state
+      })
+    }
   }
 
   const deleteData = (doc: string) => {
-    db.collection('people').doc(doc).delete().then(() => {
-      toast.success('Registro deletado com sucesso')
-    })
+    if (user) {
+      db.collection(user).doc(doc).delete().then(() => {
+        toast.success('Registro deletado com sucesso')
+      })
+    }
   }
 
   const contextValue = {
-    addNewPerson,
+    addOrSetNewPerson,
     people,
     deleteData
   }

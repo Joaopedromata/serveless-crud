@@ -6,6 +6,7 @@ import { auth } from '../connection/firebase'
 export interface IAuthState {
   signUp: (email: string, password: string) => void
   signIn: (email: string, password: string) => void
+  signOut: () => void
   updatePassword: (newPassword: string) => void
   sendMail: (email: string) => void
   user: any
@@ -14,6 +15,7 @@ export interface IAuthState {
 const initialState: IAuthState = {
   signUp: () => undefined,
   signIn: () => undefined,
+  signOut: () => undefined,
   updatePassword: () => undefined,
   sendMail: () => undefined,
   user: {}
@@ -22,7 +24,7 @@ const initialState: IAuthState = {
 export const AuthContext = createContext(initialState)
 
 const AuthState = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>({})
+  const [user, setUser] = useState<any>()
 
   const history = useHistory()
 
@@ -37,15 +39,18 @@ const AuthState = ({ children }: { children: ReactNode }) => {
 
   const signIn = (email: string, password: string) => {
     auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
+      .then(e => {
+        if (e.user?.uid) {
+          localStorage.setItem('user', e.user?.uid)
+        }
         history.push('/core')
       })
       .catch(() => toast.error('Verifique as credenciais fornecidas'))
   }
 
   useEffect(() => {
-    setUser(auth.currentUser)
-  }, [signIn, signUp])
+    setUser(localStorage.getItem('user'))
+  }, [signUp])
 
   const updatePassword = (newPassword: string) => {
     auth.currentUser?.updatePassword(newPassword).then(() => {
@@ -63,9 +68,15 @@ const AuthState = ({ children }: { children: ReactNode }) => {
     ).catch(() => toast.error('Este email não existe em nosso sistema'))
   }
 
+  const signOut = () => {
+    localStorage.removeItem('user')
+    history.push('/')
+  }
+
   const contextValue = {
     signUp,
     signIn,
+    signOut,
     sendMail,
     updatePassword,
     user
