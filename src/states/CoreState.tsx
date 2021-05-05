@@ -5,7 +5,7 @@ import { db } from '../connection/firebase'
 export interface ICoreState {
   addNewPerson: (
     name: string,
-    age: number,
+    age: number | string,
     maritalStatus: string,
     identification: string,
     city: string,
@@ -37,7 +37,7 @@ const CoreState = ({ children }: { children: ReactNode }) => {
 
   const addNewPerson = (
     name: string,
-    age: number,
+    age: number | string,
     maritalStatus: string,
     identification: string,
     city: string,
@@ -50,7 +50,7 @@ const CoreState = ({ children }: { children: ReactNode }) => {
       identification,
       city,
       state
-    }).then((r) => console.log(r)).catch(e => console.log(e))
+    })
   }
 
   const deleteData = (doc: string) => {

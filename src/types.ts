@@ -11,7 +11,7 @@ export interface IPerson {
 
   data: {
     name: string,
-    age: number,
+    age: number | string,
     maritalStatus: string,
     identification: string,
     city: string,
