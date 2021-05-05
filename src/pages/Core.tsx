@@ -5,10 +5,11 @@ import { useContext, useEffect, useState } from 'react'
 import { CoreContext } from '../states/CoreState'
 import { IPerson, IState, ICity } from '../types'
 import { lowerCaseStringAndRemoveAccent } from '../utils/strings'
-import { FiTrash, FiEdit } from 'react-icons/fi'
+import { FiTrash, FiEdit, FiPlus } from 'react-icons/fi'
 import swal from 'sweetalert2'
 import axios from 'axios'
 import Space from '../components/Space'
+import { toast } from 'react-toastify'
 
 interface Props {
   className?: string
@@ -22,20 +23,47 @@ const Core = ({ className }: Props) => {
   const [cities, setCities] = useState<ICity[]>([])
 
   const [inputName, setInputName] = useState<string>('')
-  const [inputAge, setInputAge] = useState<number>()
+  const [inputAge, setInputAge] = useState<number | string>('')
   const [inputMaritalStatus, setInputMaritalStatus] = useState<string>('')
   const [inputIdentification, setInputIdentification] = useState<string>('')
   const [inputState, setInputState] = useState<string>('')
   const [inputCity, setInputCity] = useState<string>('')
   const [action, setAction] = useState<'UPDATE' | 'CREATE'>('CREATE')
 
-  useEffect(() => {
-    addNewPerson('jpoo', 12, 'teste', '32131223', 'bh', 'mg')
-  }, [])
+  const handleCreate = () => {
+    try {
+      if (data.find(x => x.uuid === inputIdentification)) {
+        toast.error('Essa pessoa já existe em nosso banco de dados')
+      } else {
+        addNewPerson(
+          inputName,
+          inputAge,
+          inputMaritalStatus,
+          inputIdentification,
+          inputCity,
+          inputState
+        )
+
+        setData([...data, {
+          data: {
+            name: inputName,
+            age: inputAge,
+            maritalStatus: inputMaritalStatus,
+            identification: inputIdentification,
+            city: inputCity,
+            state: inputState
+          },
+          uuid: inputIdentification
+        }])
+      }
+    } catch {
+      toast.error('Ocorreu um erro ao registrar o dado')
+    }
+  }
 
   const setInputFields = (
     name: string,
-    age: number,
+    age: number | string,
     maritalStatus: string,
     identification: string,
     city: string,
@@ -91,6 +119,7 @@ const Core = ({ className }: Props) => {
       <Header />
       <div className={className}>
         <div className="left-side">
+          <Button className="add__button" onClick={() => setAction('CREATE')}><FiPlus /></Button>
           <Form.Group className="w-50 input__group" >
             <Form.Label>Pesquisar</Form.Label>
             <Form.Control
@@ -113,7 +142,7 @@ const Core = ({ className }: Props) => {
               </tr>
             </thead>
             <tbody>
-              {filterPeople().map((person: IPerson) => (
+              {filterPeople()?.map((person: IPerson) => (
                 <tr key={person.uuid}>
                   <td>{person.data.name}</td>
                   <td>{person.data.age}</td>
@@ -132,7 +161,7 @@ const Core = ({ className }: Props) => {
                         person.data.state
                       )
                     }}/>
-                    <FiTrash onClick={() => handleDelete(person.uuid)}/>
+                    <FiTrash onClick={() => handleDelete(person?.uuid)}/>
                   </td>
                 </tr>
               ))}
@@ -145,6 +174,7 @@ const Core = ({ className }: Props) => {
           <Form.Control
             value={inputName}
             type="text"
+            onChange={e => setInputName(e.target.value)}
           />
         </Form.Group>
         <Form.Row className="col-12">
@@ -153,6 +183,7 @@ const Core = ({ className }: Props) => {
             <Form.Control
               value={inputAge}
               type="number"
+              onChange={e => setInputAge(e.target.value)}
             />
           </Form.Group>
           <Form.Group className="col-9">
@@ -160,6 +191,7 @@ const Core = ({ className }: Props) => {
             <Form.Control
               as="select"
               value={inputMaritalStatus}
+              onChange={e => setInputMaritalStatus(e.target.value)}
             >
               <option>Solteiro(a)</option>
               <option>Casado(a)</option>
@@ -174,6 +206,7 @@ const Core = ({ className }: Props) => {
           <Form.Control
             value={inputIdentification}
             type="email"
+            onChange={e => setInputIdentification(e.target.value)}
           />
         </Form.Group>
         <Form.Row className="col-12">
@@ -181,7 +214,10 @@ const Core = ({ className }: Props) => {
             <Form.Label>Estado</Form.Label>
             <Form.Control
               as="select"
-              onChange={e => loadCities(e.target.value)}
+              onChange={e => {
+                loadCities(e.target.value)
+                setInputMaritalStatus(e.target.value)
+              }}
               value={inputState}
             >
               {states.map(state => (
@@ -194,6 +230,7 @@ const Core = ({ className }: Props) => {
             <Form.Control
               as="select"
               value={inputCity}
+              onChange={e => setInputCity(e.target.value)}
             >
               {cities && cities.map(city => (
                 <option key={city.id}>{city.nome}</option>
@@ -203,7 +240,7 @@ const Core = ({ className }: Props) => {
           <Space height="100px"/>
           {action === 'CREATE'
             ? (
-            <Button type="submit" className="btn-block">Adicionar</Button>
+              <Button type="submit" className="btn-block" onClick={handleCreate}>Adicionar</Button>
               )
             : (
             <Button type="submit" className="btn-block btn-success">Editar</Button>
@@ -228,10 +265,39 @@ export default styled(Core)`
   }
 
   .left-side {
+    height: calc(100vh - 90px);
     margin-top: 90px;
     display: flex;
+    overflow-y: scroll;
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: ${props => props.theme.secondaryColor};
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
     flex-direction: column;
     align-items: center;
+    position: relative;
+
+    .add__button {
+
+      position: absolute;
+      right: 15px;
+      top: 15px;
+
+      svg {
+        height: 30px;
+        width: 30px;
+      }
+    }
 
     .input__group {
       margin: 40px 0;
@@ -240,10 +306,14 @@ export default styled(Core)`
 
   .right-side {
     background: ${props => props.theme.white};
-    height: 100%;
     width: 100%;
     box-shadow: -1px 0px 10px 1px #00000040;
+    height: 100%;
+
     padding-top: 120px;
+    .form-control:valid {
+      background:  ${props => props.theme.lightGray} !important;
+    }
 
     @media(max-width: 1000px) {
       padding: 30px 0;
@@ -253,11 +323,8 @@ export default styled(Core)`
   .table {
     color: ${props => props.theme.fontColor};
     max-width: 100%;
-    box-shadow: 4px 4px 20px 2px #00000040;
 
-    @media(max-width: 1000px) {
-      background: yellow;
-    }
+    box-shadow: 4px 4px 20px 2px #00000040;
 
     thead {
       background: ${props => props.theme.primaryColor};
