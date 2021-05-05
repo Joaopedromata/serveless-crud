@@ -1,7 +1,6 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { createContext, ReactNode, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { db } from '../connection/firebase'
-import { AuthContext } from './AuthState'
 
 export interface ICoreState {
   addOrSetNewPerson: (
@@ -26,17 +25,17 @@ export const CoreContext = createContext(initialState)
 
 const CoreState = ({ children }: { children: ReactNode }) => {
   const [people, setPeople] = useState<any[]>()
-  const { user } = useContext(AuthContext)
+  const user = localStorage.getItem('user')
 
   const getData = async (user: string) => {
-    if (user) {
-      const snapshot = await db.collection(user).get()
-      return setPeople(snapshot.docs.map(doc => { return { data: doc.data(), uuid: doc.id } }))
-    }
+    const snapshot = await db.collection(user).get()
+    return setPeople(snapshot.docs.map(doc => { return { data: doc.data(), uuid: doc.id } }))
   }
 
   useEffect(() => {
-    getData(user)
+    if (user) {
+      getData(user)
+    }
   }, [user])
 
   const addOrSetNewPerson = (

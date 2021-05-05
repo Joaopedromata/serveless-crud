@@ -213,8 +213,9 @@ const Core = ({ className }: Props) => {
               as="select"
               value={inputMaritalStatus}
               onChange={e => setInputMaritalStatus(e.target.value)}
+              defaultValue="default"
             >
-              <option selected>Estado Civil</option>
+              <option value="default">Estado Civil</option>
               <option>Solteiro(a)</option>
               <option>Casado(a)</option>
               <option>Divorciado(a)</option>
@@ -238,11 +239,10 @@ const Core = ({ className }: Props) => {
               as="select"
               onChange={e => {
                 loadCities(e.target.value)
-                setInputMaritalStatus(e.target.value)
+                setInputState(e.target.value)
               }}
               value={inputState}
             >
-              <option selected>UF</option>
               {states.map(state => (
                 <option key={state.id}>{state.sigla}</option>
               ))}
@@ -254,8 +254,9 @@ const Core = ({ className }: Props) => {
               as="select"
               value={inputCity}
               onChange={e => setInputCity(e.target.value)}
+              defaultValue="default"
             >
-              <option selected>Cidade</option>
+              <option value="default">Cidade</option>
               {cities && cities.map(city => (
                 <option key={city.id}>{city.nome}</option>
               ))}
@@ -293,6 +294,10 @@ export default styled(Core)`
     margin-top: 90px;
     display: flex;
     overflow-y: scroll;
+
+    @media(max-width: 1000px){
+     height: 70%;
+    }
 
     ::-webkit-scrollbar {
         width: 8px;
