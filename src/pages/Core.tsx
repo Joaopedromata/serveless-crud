@@ -16,7 +16,7 @@ interface Props {
 }
 
 const Core = ({ className }: Props) => {
-  const { addNewPerson, people, deleteData } = useContext(CoreContext)
+  const { addOrSetNewPerson, people, deleteData } = useContext(CoreContext)
   const [data, setData] = useState<IPerson[]>(people)
   const [search, setSearch] = useState<string>('')
   const [states, setStates] = useState<IState[]>([])
@@ -35,26 +35,30 @@ const Core = ({ className }: Props) => {
       if (data.find(x => x.uuid === inputIdentification)) {
         toast.error('Essa pessoa já existe em nosso banco de dados')
       } else {
-        addNewPerson(
-          inputName,
-          inputAge,
-          inputMaritalStatus,
-          inputIdentification,
-          inputCity,
-          inputState
-        )
+        if (inputName && inputAge && inputMaritalStatus && inputIdentification && inputCity && inputState) {
+          addOrSetNewPerson(
+            inputName,
+            inputAge,
+            inputMaritalStatus,
+            inputIdentification,
+            inputCity,
+            inputState
+          )
 
-        setData([...data, {
-          data: {
-            name: inputName,
-            age: inputAge,
-            maritalStatus: inputMaritalStatus,
-            identification: inputIdentification,
-            city: inputCity,
-            state: inputState
-          },
-          uuid: inputIdentification
-        }])
+          setData([...data, {
+            data: {
+              name: inputName,
+              age: inputAge,
+              maritalStatus: inputMaritalStatus,
+              identification: inputIdentification,
+              city: inputCity,
+              state: inputState
+            },
+            uuid: inputIdentification
+          }])
+        } else {
+          toast.error('Preencha todos os campos')
+        }
       }
     } catch {
       toast.error('Ocorreu um erro ao registrar o dado')
@@ -114,12 +118,29 @@ const Core = ({ className }: Props) => {
     })
   }
 
+  const handleUpdate = () => {
+    try {
+      if (inputName && inputAge && inputMaritalStatus && inputIdentification && inputCity && inputState) {
+        addOrSetNewPerson(
+          inputName,
+          inputAge,
+          inputMaritalStatus,
+          inputIdentification,
+          inputCity,
+          inputState
+        )
+      }
+    } catch {
+      toast.error('Ocorreu um erro ao editar este item')
+    }
+  }
+
   return (
     <>
       <Header />
       <div className={className}>
         <div className="left-side">
-          <Button className="add__button" onClick={() => setAction('CREATE')}><FiPlus /></Button>
+          {action === 'UPDATE' && <Button className="add__button" onClick={() => setAction('CREATE')}><FiPlus /></Button>}
           <Form.Group className="w-50 input__group" >
             <Form.Label>Pesquisar</Form.Label>
             <Form.Control
@@ -193,6 +214,7 @@ const Core = ({ className }: Props) => {
               value={inputMaritalStatus}
               onChange={e => setInputMaritalStatus(e.target.value)}
             >
+              <option selected>Estado Civil</option>
               <option>Solteiro(a)</option>
               <option>Casado(a)</option>
               <option>Divorciado(a)</option>
@@ -220,6 +242,7 @@ const Core = ({ className }: Props) => {
               }}
               value={inputState}
             >
+              <option selected>UF</option>
               {states.map(state => (
                 <option key={state.id}>{state.sigla}</option>
               ))}
@@ -232,6 +255,7 @@ const Core = ({ className }: Props) => {
               value={inputCity}
               onChange={e => setInputCity(e.target.value)}
             >
+              <option selected>Cidade</option>
               {cities && cities.map(city => (
                 <option key={city.id}>{city.nome}</option>
               ))}
@@ -243,7 +267,7 @@ const Core = ({ className }: Props) => {
               <Button type="submit" className="btn-block" onClick={handleCreate}>Adicionar</Button>
               )
             : (
-            <Button type="submit" className="btn-block btn-success">Editar</Button>
+            <Button type="submit" className="btn-block btn-success" onClick={handleUpdate}>Editar</Button>
               )}
         </Form.Row>
         </div>

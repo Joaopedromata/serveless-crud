@@ -1,20 +1,20 @@
 import styled from 'styled-components'
 import { FiLogOut } from 'react-icons/fi'
 import logo from '../assets/logo.svg'
-import { useHistory } from 'react-router'
+import { useContext } from 'react'
+import { AuthContext } from '../states/AuthState'
 
 interface Props {
   className?: string
 }
 
 const Header = ({ className }: Props) => {
-  const history = useHistory()
-
+  const { signOut } = useContext(AuthContext)
   return (
     <nav className={className}>
       <div className="wrapper">
         <img src={logo} alt="logo"/>
-        <FiLogOut onClick={() => history.push('/')}/>
+        <FiLogOut onClick={() => signOut()}/>
       </div>
     </nav>
   )

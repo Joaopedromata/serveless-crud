@@ -1,8 +1,8 @@
 import { Redirect, Route } from 'react-router-dom'
-import { auth } from '../connection/firebase'
 
 const PrivateRoute = ({ ...props }) => {
-  if (auth.currentUser) {
+  const user = localStorage.getItem('user')
+  if (user) {
     return <Route {...props} />
   } else {
     return <Redirect to="/" />
