@@ -1,4 +1,4 @@
-import { Button, Form, Table } from 'react-bootstrap'
+import { Button, Form, Pagination, Table } from 'react-bootstrap'
 import Header from '../components/Header'
 import styled from 'styled-components'
 import { useContext, useEffect, useState } from 'react'
@@ -16,8 +16,16 @@ interface Props {
 }
 
 const Core = ({ className }: Props) => {
-  const { addOrSetNewPerson, people, deleteData } = useContext(CoreContext)
-  const [data, setData] = useState<IPerson[]>(people)
+  const {
+    addOrSetNewPerson,
+    people,
+    deleteData,
+    getNextPage,
+    getPreviousPage,
+    pages,
+    updateData
+  } = useContext(CoreContext)
+  const [data, setData] = useState<IPerson[]>()
   const [search, setSearch] = useState<string>('')
   const [states, setStates] = useState<IState[]>([])
   const [cities, setCities] = useState<ICity[]>([])
@@ -29,10 +37,15 @@ const Core = ({ className }: Props) => {
   const [inputState, setInputState] = useState<string>('')
   const [inputCity, setInputCity] = useState<string>('')
   const [action, setAction] = useState<'UPDATE' | 'CREATE'>('CREATE')
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setData(people)
+  }, [people])
 
   const handleCreate = () => {
     try {
-      if (data.find(x => x.uuid === inputIdentification)) {
+      if (data && data.find(x => x.uuid === inputIdentification)) {
         toast.error('Essa pessoa já existe em nosso banco de dados')
       } else {
         if (inputName && inputAge && inputMaritalStatus && inputIdentification && inputCity && inputState) {
@@ -44,18 +57,19 @@ const Core = ({ className }: Props) => {
             inputCity,
             inputState
           )
-
-          setData([...data, {
-            data: {
-              name: inputName,
-              age: inputAge,
-              maritalStatus: inputMaritalStatus,
-              identification: inputIdentification,
-              city: inputCity,
-              state: inputState
-            },
-            uuid: inputIdentification
-          }])
+          if (data) {
+            setData([{
+              data: {
+                name: inputName,
+                age: inputAge,
+                maritalStatus: inputMaritalStatus,
+                identification: inputIdentification,
+                city: inputCity,
+                state: inputState
+              },
+              uuid: inputIdentification
+            }, ...data].filter((x, i) => i !== data.length - 1))
+          }
         } else {
           toast.error('Preencha todos os campos')
         }
@@ -109,19 +123,37 @@ const Core = ({ className }: Props) => {
       title: 'Deseja deletar esse cadastro permanentemente?',
       icon: 'warning',
       showCancelButton: true,
-      cancelButtonText: 'Cancelar',
+      cancelButtonText: 'Cancelars',
       showConfirmButton: true,
       confirmButtonText: 'Confirmar'
-    }).then(() => {
-      deleteData(id)
-      setData(data.filter(person => person.uuid !== id))
+    }).then((e) => {
+      if (e.isConfirmed) {
+        deleteData(id)
+        if (data) {
+          setData(data.filter(person => person.uuid !== id))
+        }
+      }
     })
+  }
+
+  const paginationNext = () => {
+    if (page < pages) {
+      getNextPage()
+      setPage(page + 1)
+    }
+  }
+
+  const paginationPrevious = () => {
+    if (page >= pages) {
+      getPreviousPage()
+      setPage(page - 1)
+    }
   }
 
   const handleUpdate = () => {
     try {
       if (inputName && inputAge && inputMaritalStatus && inputIdentification && inputCity && inputState) {
-        addOrSetNewPerson(
+        updateData(
           inputName,
           inputAge,
           inputMaritalStatus,
@@ -129,6 +161,23 @@ const Core = ({ className }: Props) => {
           inputCity,
           inputState
         )
+
+        setData(data?.map(x => {
+          if (x.uuid === inputIdentification) {
+            return {
+              data: {
+                name: inputName,
+                age: inputAge,
+                maritalStatus: inputMaritalStatus,
+                identification: inputIdentification,
+                city: inputCity,
+                state: inputState
+              },
+              uuid: inputIdentification
+            }
+          }
+          return x
+        }))
       }
     } catch {
       toast.error('Ocorreu um erro ao editar este item')
@@ -188,6 +237,11 @@ const Core = ({ className }: Props) => {
               ))}
             </tbody>
           </Table>
+          <Pagination>
+            <Pagination.Prev disabled={!(page >= pages)} onClick={() => paginationPrevious()}/>
+            <Pagination.Item>{page}</Pagination.Item>
+            <Pagination.Next disabled={!(page < pages)}onClick={() => paginationNext()}/>
+          </Pagination>
         </div>
         <div className="right-side">
         <Form.Group className="col-12">
@@ -227,6 +281,7 @@ const Core = ({ className }: Props) => {
         <Form.Group className="col-12">
           <Form.Label>CPF</Form.Label>
           <Form.Control
+            disabled={action === 'UPDATE'}
             value={inputIdentification}
             type="email"
             onChange={e => setInputIdentification(e.target.value)}
