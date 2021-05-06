@@ -17,7 +17,7 @@
 </p>
 <hr />
 <p align="center">
-    <a align="center">https://educat.vercel.app/<a>
+    <a align="center" href="https://serveless-crud.web.app/">https://serveless-crud.web.app/<a>
 </p>
 <hr />
 </br>
@@ -62,15 +62,42 @@
   - É **necessário** possuir o **[Git](https://git-scm.com/)** instalado e configurado no computador
   - Também, é **preciso** ter um gerenciador de pacotes seja o **[NPM](https://www.npmjs.com/)** ou **[Yarn](https://yarnpkg.com/)**.
 
+</br>
+
+#### Para configurar o projeto, crie um arquivo .env na raiz do seu diretório e insira as seguintes variáveis de ambiente.
+
+</br>
+
+| CHAVE   |      VALOR      |
+|----------|:-------------:|
+| REACT_APP_FIREBASE_KEY | apiKey |
+| REACT_APP_FIREBASE_AUTH_DOMAIN | authDomain |
+| REACT_APP_PROJECT_ID | projectId |
+| REACT_APP_STORAGE_BUCKET | storageBucket |
+| REACT_APP_MESSAGING_SENDER_ID | messagingSenderId |
+| REACT_APP_APP_ID | appId |
+
+</br>
+
 #### Para executar o servidor da aplicação, abra o terminal do seu sistema operacional, navegue até a pasta do projeto, entre no diretório server e execute:
+
+</br>
+
 
     npm install
 
+</br>
+
 #### Esse comando fará com que o node instale todas as dependências de seu projeto.
+
+</br>
 
 #### Para rodar o servidor digite:
 
+</br>
+
     npm start
 
+</br>
 
 Pronto!!! Agora seu sistema estará rodando na porta 3000 do seu computador.
