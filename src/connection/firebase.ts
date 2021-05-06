@@ -2,15 +2,13 @@ import firebase from 'firebase/app'
 import 'firebase/firebase-firestore'
 import 'firebase/firebase-auth'
 
-// TO-DO REMOVING CREDENTIALS
-
 const firebaseConfig = {
-  apiKey: 'AIzaSyAwWVyOx2MuCtQ56frsm0jXd7cpf6DPg7g',
-  authDomain: 'serveless-crud.firebaseapp.com',
-  projectId: 'serveless-crud',
-  storageBucket: 'serveless-crud.appspot.com',
-  messagingSenderId: '1002395515659',
-  appId: '1:1002395515659:web:e33ae0c5d9a2a2f82e400e'
+  apiKey: process.env.REACT_APP_FIREBASE_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID
 }
 
 firebase.initializeApp(firebaseConfig)

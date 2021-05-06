@@ -121,6 +121,8 @@ const CoreState = ({ children }: { children: ReactNode }) => {
         city,
         state
       })
+
+      setPages(((pages + 1) / 3))
     }
   }
 
